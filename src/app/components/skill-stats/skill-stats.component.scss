@@ -1,0 +1,61 @@
+@use 'mixins' as gw;
+
+:host { display: block; }
+
+.panel {
+  @include gw.hud-panel {
+    padding-block-start: var(--gw-space-8);
+  }
+}
+
+.tag { @include gw.hud-tag; margin: 0; }
+
+.rows {
+  display: grid;
+  gap: var(--gw-space-3);
+  margin: 0;
+}
+
+// Row = name · track · percent. Fixed name and percent columns, so every bar starts and ends at the same x.
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, var(--gw-skill-name-width)) minmax(0, 1fr) 4ch; // 4ch fits "100%".
+  align-items: center;
+  gap: var(--gw-space-3);
+}
+
+.name {
+  @include gw.type-label;
+  color: var(--gw-white);
+  overflow: hidden;
+  text-overflow: ellipsis;  // Why: "Jupyter Notebook" must not push the bars out of line.
+  white-space: nowrap;
+}
+
+.track {
+  display: block;
+  height: var(--gw-bar-height);
+  background: var(--gw-track); // White 10% (spec 06).
+  border-radius: var(--gw-radius-control);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--gw-bar-fill); // Pink → orange gradient.
+  transform-origin: left center; // What: scale from the left edge. Why: the GSAP fill grows left to right.
+}
+
+.percent {
+  @include gw.type-label;
+  color: var(--gw-white);
+  text-align: end;
+  font-variant-numeric: tabular-nums; // Why: "9%" and "45%" line up on the right.
+}
+
+.note {
+  @include gw.type-small;
+  margin-block-start: var(--gw-space-4);
+  color: var(--gw-muted);
+}

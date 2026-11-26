@@ -1,0 +1,35 @@
+@use 'mixins' as gw;
+
+// What: the host spans the full width; only content is capped at --gw-content-max.
+// Why: the top bar (GW mark) must sit at exactly the same spot as on the hero, or it jumps on every navigation.
+:host {
+  display: block;
+  min-height: 100dvh;
+  padding-inline: var(--gw-grid-margin);
+}
+
+.topbar {
+  position: relative;
+  z-index: var(--gw-z-toast); // Why: stays above the full-screen error scrim, so "Search another" is always reachable.
+  display: flex;
+  align-items: center;
+  gap: var(--gw-space-4);
+  padding-block: var(--gw-space-4);
+}
+
+.back {
+  @include gw.type-label;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--gw-touch-min);
+  padding-inline: var(--gw-space-3);
+  background: var(--gw-scrim-strong);
+  border: var(--gw-border);
+  border-radius: var(--gw-radius-control);
+  color: var(--gw-cyan);
+  text-decoration: none;
+  transition: border-color var(--gw-dur-fast) var(--gw-ease-enter), transform var(--gw-dur-instant) var(--gw-ease-enter);
+
+  @include gw.hover { border-color: var(--gw-border-color-active); }
+  &:active { transform: scale(var(--gw-press-scale)); }
+}

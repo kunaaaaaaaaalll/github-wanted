@@ -1,0 +1,29 @@
+@use 'mixins' as gw;
+
+:host {
+  display: grid;
+  gap: var(--gw-space-2);
+}
+
+.label { @include gw.type-label; }
+
+.stars {
+  display: flex;
+  gap: var(--gw-star-gap);
+}
+
+.star {
+  width: var(--gw-star-size);
+  height: var(--gw-star-size);
+  fill: none;
+  stroke: var(--gw-star-off); // Off: muted outline at 40% (spec 06).
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  overflow: visible;
+
+  &.on {
+    fill: var(--gw-gold);
+    stroke: var(--gw-gold);
+    filter: drop-shadow(var(--gw-glow-gold)); // What: soft glow on earned stars. Why: spec 06; the row counts as one glowing element in the glow budget.
+  }
+}

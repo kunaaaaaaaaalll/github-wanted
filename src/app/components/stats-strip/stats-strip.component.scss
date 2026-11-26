@@ -1,0 +1,45 @@
+@use 'mixins' as gw;
+
+:host { display: block; }
+
+.panel {
+  @include gw.hud-panel {
+    padding-block-start: var(--gw-space-8);
+  }
+}
+
+.tag { @include gw.hud-tag; margin: 0; }
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+
+  // Mobile: 2 × 2 (spec 09.4).
+  @include gw.mobile-only { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--gw-space-4); }
+}
+
+.cell {
+  display: flex;
+  flex-direction: column-reverse; // What: visual order numeral-above-label, DOM order <dt> then <dd>. Why: a <dl> requires dt first, and screen readers should hear "Repos, 12".
+  gap: var(--gw-space-1);
+  padding-inline: var(--gw-space-4);
+  min-width: 0;
+
+  // Dividers between cells: 1px cyan at 25% (spec 06).
+  & + & { border-inline-start: var(--gw-border-width) solid var(--gw-divider-color); }
+  &:first-child { padding-inline-start: 0; }
+
+  @include gw.mobile-only {
+    &:nth-child(odd) { border-inline-start: 0; padding-inline-start: 0; }
+  }
+}
+
+.value {
+  @include gw.type-numeral;
+  margin: 0;
+  color: var(--gw-white);
+  white-space: nowrap;
+}
+
+.label { @include gw.type-label; }

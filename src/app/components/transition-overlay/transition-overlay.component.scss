@@ -1,0 +1,37 @@
+// Both overlays start hidden (CSS = resting state); GSAP shows them only during a transition.
+.wipe,
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-wipe);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.wipe {
+  background: var(--gw-night);
+  will-change: transform; // What: promote to its own GPU layer. Why: it only ever moves with transform, and must stay 60fps over the 3D canvas.
+}
+
+// Neon edges on both sides: the right edge leads while covering, the left edge leads while revealing.
+.edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--gw-bracket-width);
+}
+.edge-right {
+  right: 0;
+  background: var(--gw-pink);
+  box-shadow: var(--gw-glow-pink);
+}
+.edge-left {
+  left: 0;
+  background: var(--gw-cyan);
+  box-shadow: var(--gw-glow-cyan);
+}
+
+.flash {
+  background: var(--gw-white);
+  pointer-events: none; // Why: the flash is a light, not a wall; it never blocks input.
+}

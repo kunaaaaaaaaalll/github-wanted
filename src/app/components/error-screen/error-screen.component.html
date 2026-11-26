@@ -1,0 +1,29 @@
+<main class="main" id="main" tabindex="-1">
+<section class="panel" aria-labelledby="gw-error-headline">
+  <p class="tag">Dispatch</p>
+
+  <!-- tabindex="-1": focusable by script (we move focus here on arrival), but not a Tab stop. -->
+  <h1 class="headline" id="gw-error-headline" #headline tabindex="-1">{{ copy().headline }}</h1>
+  <p class="name">&#64;{{ username() }}</p>
+
+  @if (error().kind === 'rate-limited') {
+    <div class="countdown">
+      <p class="lay-low">{{ layLow() }}</p>
+      <!-- The ticking clock is hidden from screen readers (it would be announced, or ignored, every second);
+           the "Lay low" sentence above carries the meaning. -->
+      <p class="clock" aria-hidden="true">{{ clock() }}</p>
+    </div>
+  }
+
+  <p class="body">{{ copy().body }}</p>
+
+  <button type="button" class="action" [disabled]="!retryReady()" (click)="onAction()">
+    {{ copy().action }}
+  </button>
+
+  <!-- Announces once, politely, when waiting is over. -->
+  <p class="visually-hidden" aria-live="polite">
+    @if (error().kind === 'rate-limited' && retryReady()) { The heat is off. You can retry now. }
+  </p>
+</section>
+</main>

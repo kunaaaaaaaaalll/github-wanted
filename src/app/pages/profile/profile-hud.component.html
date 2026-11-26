@@ -1,0 +1,35 @@
+@let p = profile();
+
+<!-- Everything that can shake lives in .hud. The ticker and toast stay outside: they're position: fixed,
+     and a transformed ancestor would break that. -->
+<div class="hud">
+  <!-- Spec 09.3 top bar: GW mark · ← SEARCH ANOTHER · WANTED LEVEL (content left) · $ CASH (top right). -->
+  <header class="topbar">
+    <div class="nav">
+      <gw-brand-mark />
+      <a gwLink="/" class="back">← Search another</a>
+    </div>
+    <gw-wanted-level class="reveal hud-chip" [level]="p.wantedLevel" />
+    <gw-cash-counter class="reveal hud-chip cash" [stars]="p.totalStars" />
+  </header>
+
+  <main class="grid" id="main" tabindex="-1">
+    <!-- Left column: sticky on desktop (spec 09.3). On mobile it dissolves so the minimap can move to the end (spec 09.4). -->
+    <div class="col-left">
+      <gw-character-card class="reveal area-card" [profile]="p" />
+      <gw-minimap-card class="area-map" [location]="p.location" />
+    </div>
+
+    <div class="col-right">
+      <gw-stats-strip class="reveal area-stats" [stats]="p.stats" />
+      <!-- Spec 10: 0 repos → skill stats hidden; the mission log shows its empty state. -->
+      @if (p.languages.length) {
+        <gw-skill-stats class="area-skills" [languages]="p.languages" [truncated]="p.reposTruncated" />
+      }
+      <gw-mission-log class="area-missions" [missions]="p.missions" />
+    </div>
+  </main>
+</div>
+
+<gw-news-ticker [news]="p.news" />
+<gw-mission-toast />

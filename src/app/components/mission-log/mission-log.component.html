@@ -1,0 +1,53 @@
+<section class="log" aria-labelledby="gw-missions-title">
+  <div class="head">
+    <h2 class="title" id="gw-missions-title">Mission log</h2>
+    @if (missions().length) {
+      <p class="count">{{ missions().length }} on record</p>
+    }
+  </div>
+
+  @if (missions().length === 0) {
+    <!-- Spec 10: 0 repos → an empty-state panel. -->
+    <div class="empty">
+      <p class="empty-title">No missions on record.</p>
+      <p class="empty-body">This one keeps a clean sheet. No public repositories yet.</p>
+    </div>
+  } @else {
+    <ul role="list" class="grid">
+      @for (m of visible(); track m.url) {
+        <li class="mission">
+          <!-- The whole card is the link (spec 06). Its accessible name is the repo name; the rest is read as content. -->
+          <a class="card" [href]="m.url" target="_blank" rel="noopener noreferrer">
+            <!-- title = full name, because the visible one truncates at one line (spec 10). -->
+            <h3 class="name" [attr.title]="m.name">{{ m.name }}</h3>
+            @if (m.description) {
+              <p class="desc">{{ m.description }}</p>
+            } @else {
+              <p class="desc is-empty">No briefing on file.</p>
+            }
+            <div class="meta">
+              @if (m.language) {
+                <span class="lang"><span class="dot" [style.background]="languageColor(m.language)" aria-hidden="true"></span>{{ m.language }}</span>
+              }
+              <span class="reward" [attr.title]="formatExact(m.stars) + ' stars'">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polygon points="12,2.5 14.9,8.6 21.5,9.4 16.6,13.9 17.9,20.5 12,17.2 6.1,20.5 7.4,13.9 2.5,9.4 9.1,8.6" /></svg>
+                {{ formatCount(m.stars) }}<span class="visually-hidden"> stars</span>
+              </span>
+              <span class="reward" [attr.title]="formatExact(m.forks) + ' forks'">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="6" cy="5" r="2.2" /><circle cx="18" cy="5" r="2.2" /><circle cx="12" cy="19" r="2.2" /><path d="M6 7.2v1.8a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7.2M12 12v4.8" /></svg>
+                {{ formatCount(m.forks) }}<span class="visually-hidden"> forks</span>
+              </span>
+            </div>
+            <span class="visually-hidden">(opens in a new tab)</span>
+          </a>
+        </li>
+      }
+    </ul>
+
+    @if (!expanded() && hiddenCount() > 0) {
+      <button type="button" class="more" (click)="showAll()">
+        Show all missions <span class="more-count">+{{ hiddenCount() }}</span>
+      </button>
+    }
+  }
+</section>

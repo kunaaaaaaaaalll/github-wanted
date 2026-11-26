@@ -1,0 +1,138 @@
+@use 'mixins' as gw;
+
+:host { display: block; }
+
+.log {
+  display: grid;
+  gap: var(--gw-space-4);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gw-space-4);
+  padding: var(--gw-space-2) var(--gw-space-3);
+  background: var(--gw-scrim-strong); // Spec 03: text over the scene sits on a scrim.
+  border-radius: var(--gw-radius-control);
+}
+
+.title { @include gw.type-h2; } // Spec 04: H2 = panel titles.
+.count { @include gw.type-label; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); // Spec 06: 2-column grid…
+  gap: var(--gw-grid-gutter);
+  margin: 0;
+
+  @include gw.mobile-only { grid-template-columns: minmax(0, 1fr); } // …1 column on mobile.
+}
+
+.mission { display: flex; } // Why: lets every card in a row stretch to the same height.
+
+.card {
+  @include gw.hud-panel {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--gw-space-2);
+    width: 100%;
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform var(--gw-dur-fast) var(--gw-ease-enter),
+      border-color var(--gw-dur-fast) var(--gw-ease-enter);
+  }
+
+  // Hover: lift −4px, border to full cyan (spec 06). Mouse only, so touch doesn't leave cards "stuck" lifted.
+  @include gw.hover {
+    transform: translateY(var(--gw-card-lift));
+    border-color: var(--gw-border-color-active);
+  }
+  &:focus-visible { border-color: var(--gw-border-color-active); }
+  &:active { transform: translateY(var(--gw-card-lift)) scale(var(--gw-press-scale)); }
+}
+
+.name {
+  @include gw.type-h2;
+  font-size: var(--gw-fs-h2-card); // Spec 06: "repo name (H2 size 18px)".
+  text-transform: none;            // Why: repo names are identifiers; "my-Repo" uppercased would misrepresent them.
+  // Spec 10: ellipsis at 1 line, full name in the title attribute.
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desc {
+  @include gw.type-small;
+  color: var(--gw-muted);
+  overflow-wrap: anywhere;
+  // Spec 06: description 2 lines, then ellipsis.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+
+  &.is-empty { font-style: italic; }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gw-space-2) var(--gw-space-4);
+  @include gw.type-small;
+  color: var(--gw-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.lang,
+.reward {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-1);
+}
+
+.dot {
+  width: var(--gw-dot-size);
+  height: var(--gw-dot-size);
+  border-radius: var(--gw-radius-round);
+}
+
+.reward svg {
+  width: var(--gw-space-4);
+  height: var(--gw-space-4);
+  fill: none;
+  stroke: var(--gw-orange); // Spec 03: orange = rewards.
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.more {
+  @include gw.type-label;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-2);
+  min-height: var(--gw-touch-min);
+  padding-inline: var(--gw-space-6);
+  background: var(--gw-scrim-strong);
+  border: var(--gw-border);
+  border-radius: var(--gw-radius-control);
+  color: var(--gw-white);
+  transition: border-color var(--gw-dur-fast) var(--gw-ease-enter), transform var(--gw-dur-instant) var(--gw-ease-enter);
+
+  @include gw.hover { border-color: var(--gw-border-color-active); }
+  &:active { transform: scale(var(--gw-press-scale)); }
+}
+.more-count { color: var(--gw-cyan); }
+
+.empty {
+  @include gw.hud-panel {
+    display: grid;
+    gap: var(--gw-space-2);
+  }
+}
+.empty-title { @include gw.type-h2; }
+.empty-body { @include gw.type-body; color: var(--gw-muted); }

@@ -1,0 +1,95 @@
+@use 'mixins' as gw;
+
+// Full screen over the city, dimmed (spec 10).
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-hud);
+  display: grid;
+  place-items: center;
+  padding: var(--gw-grid-margin);
+  background: var(--gw-scrim-strong); // What: night at 75% over the whole city. Why: "city dimmed"; the panel is the only thing to look at.
+}
+
+.main {
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.panel {
+  @include gw.hud-panel {
+    display: grid;
+    justify-items: start;
+    gap: var(--gw-space-3);
+    width: min(100%, var(--gw-input-max));
+    padding-block-start: var(--gw-space-8); // Why: room under the tag that sits on the top border.
+  }
+}
+
+.tag { @include gw.hud-tag; }
+
+.headline {
+  @include gw.type-h1;
+  overflow-wrap: anywhere;
+  // Programmatic focus only (tabindex -1); a ring here would look like a bug.
+  // :focus-visible too, because Chrome treats script focus as "visible" when the last input was the keyboard or none.
+  &:focus, &:focus-visible { outline: none; box-shadow: none; }
+}
+
+.name {
+  @include gw.type-label;
+  color: var(--gw-cyan);
+  overflow-wrap: anywhere; // Why: a 39-character login must not overflow the panel.
+}
+
+.countdown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gw-space-4);
+  width: 100%;
+  padding-block: var(--gw-space-2);
+  border-block: var(--gw-border-width) solid var(--gw-divider-color);
+}
+
+.lay-low {
+  @include gw.type-body;
+  color: var(--gw-orange); // Spec 03: orange = warnings. 8.5:1 on night.
+}
+
+.clock {
+  @include gw.type-numeral;
+  color: var(--gw-white);
+  min-width: 5ch; // Why: tabular digits plus a fixed width keep the clock from jittering as it ticks.
+}
+
+.body {
+  @include gw.type-body;
+  max-width: var(--gw-measure);
+  color: var(--gw-muted);
+}
+
+.action {
+  min-height: var(--gw-touch-min);
+  margin-block-start: var(--gw-space-2);
+  padding-inline: var(--gw-space-6);
+  background: var(--gw-pink);
+  color: var(--gw-night);
+  border: 0;
+  border-radius: var(--gw-radius-control);
+  font-family: var(--gw-font-display);
+  font-size: var(--gw-fs-cta);
+  letter-spacing: var(--gw-ls-h2);
+  text-transform: uppercase;
+  transition:
+    box-shadow var(--gw-dur-fast) var(--gw-ease-enter),
+    transform var(--gw-dur-instant) var(--gw-ease-enter),
+    opacity var(--gw-dur-fast) var(--gw-ease-enter);
+
+  @include gw.hover { box-shadow: var(--gw-glow-pink); }
+  &:active:not(:disabled) { transform: scale(var(--gw-press-scale)); }
+  &:focus-visible { outline-color: var(--gw-white); } // Pink ring on a pink button would vanish.
+  &:disabled { opacity: var(--gw-disabled-opacity); cursor: not-allowed; }
+}

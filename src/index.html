@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GitHub Wanted</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- What: one-line pitch for search results and link previews. Why: without it, crawlers guess a description from page text. -->
+  <meta name="description" content="Paste any GitHub profile and meet the suspect: a cinematic wanted poster for developers. Public GitHub data only. Nothing is stored.">
+  <!-- What: tints the mobile browser chrome with --gw-night. Why: a white address bar above a night-sky page looks broken. -->
+  <meta name="theme-color" content="#0b0614">
+  <!-- What: tells the browser the page is dark. Why: native scrollbars and form controls render dark instead of flashing white. -->
+  <meta name="color-scheme" content="dark">
+
+  <!-- What: opens the TCP+TLS connections to Google Fonts early. Why: saves ~100–300ms on the first font request, which directly helps LCP (the hero title). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- What: same for the server that hosts the font files. Why: font files are CORS requests, so "crossorigin" is required or the preconnect is wasted. -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- What: Anton (display) + Rajdhani 500/700 only, with display=swap. Why: the spec allows only these weights (≤ 3 font files); swap shows fallback text immediately instead of invisible text. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@500;700&display=swap">
+
+  <!-- What: the GW badge as favicon. SVG first (sharp at any size); .ico for browsers that don't take SVG icons (Safari);
+       Apple touch icon for "Add to Home Screen" on iOS. Why sizes="any" on the .ico: stops Chrome downloading both. -->
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

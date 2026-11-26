@@ -1,0 +1,229 @@
+// =============================================================================
+// GitHub Wanted: design tokens ("Neon Dusk")
+// Source of truth: docs/design-motion-spec.pdf, sections 03–08.
+//
+// Two kinds of token live here:
+//   1. CSS custom properties (--gw-*) on :root. Components use these, always.
+//      Why CSS vars and not SCSS vars? They exist at runtime, so a media query
+//      can swap a value (e.g. mobile type sizes) in ONE place and every
+//      component follows. SCSS vars are frozen at compile time.
+//   2. SCSS values ($gw-bp-*) only where CSS vars cannot work: media query
+//      conditions. `@media (min-width: var(--x))` is invalid CSS.
+//
+// Rule: components never use raw hex, px sizes, or durations. If a value is
+// missing here, add a token; don't inline it.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Breakpoints (spec 05). SCSS only, because media queries can't read CSS vars.
+// ---------------------------------------------------------------------------
+$gw-bp-tablet: 600px;   // What: Tablet starts here (Mobile = 0–599). Why: grid moves 4 → 8 columns.
+$gw-bp-desktop: 1024px; // What: Desktop starts here. Why: grid moves 8 → 12 columns, sticky left column, card tilt.
+$gw-bp-wide: 1440px;    // What: Wide starts here. Why: content stops growing at 1320px and centers.
+
+:root {
+  // -------------------------------------------------------------------------
+  // 03 Color system
+  // -------------------------------------------------------------------------
+  --gw-night: #0b0614;  // Page background, panel base.
+  --gw-white: #f5f5f5;  // Primary text, HUD numerals. 18.3:1 on night.
+  --gw-muted: #b9aecb;  // Secondary text, labels. 9.5:1 on night.
+  --gw-pink: #ff2e88;   // Primary accent, CTA fill, focus ring. 5.7:1. Use NIGHT text on pink (white on pink is 3.2:1, large display only).
+  --gw-orange: #ff8a3d; // Secondary accent, rewards, warnings. 8.5:1.
+  --gw-gold: #ffd36e;   // Wanted stars (on), sun highlights. 14.1:1.
+  --gw-cyan: #2de2e6;   // Tech accent: borders, data highlights, links. 12.5:1.
+  --gw-purple: #6b2fbf; // Sky gradients, panel tints. DECORATIVE ONLY: 2.7:1 fails AA, never use for text.
+
+  // What: the sky's top stop, named so the 3D sky shader can read it. Why: the shader must match the CSS gradient exactly.
+  --gw-sky-top: #2a0c3d;
+  // What: the one shared sky (same values as the spec, written with tokens). Why: one gradient = one recognizable world (also the WebGL-off fallback).
+  --gw-sunset: linear-gradient(180deg, var(--gw-sky-top) 0%, var(--gw-purple) 35%, var(--gw-pink) 70%, var(--gw-orange) 100%);
+
+  // 3D scene colors (spec 12). Read by src/app/three/palette.ts at runtime, so the city and the CSS fallback share one palette.
+  --gw-3d-building: #1e1036; // "Flat night-purple shading": between night and purple, dark enough to silhouette against the sun.
+  --gw-3d-ground: #0f0820;   // Ground plane: a touch lighter than night so the horizon line reads.
+  --gw-3d-fog: #8a2f7e;      // "Fog tinted pink-purple": the haze far buildings fade into.
+  // What: glass panel fill. Why: readable over the city, still lets atmosphere through.
+  --gw-panel: rgba(11, 6, 20, 0.72);
+  // What: panel fill where backdrop-filter is unsupported (spec 06: 88% opacity). Why: without blur, 72% isn't enough to keep text contrast stable over the city.
+  --gw-panel-solid: rgba(11, 6, 20, 0.88);
+  // What: neon glow shadows. Why: focus and hover "light up" the HUD. Budget: max 2 glowing elements visible outside a moment.
+  --gw-glow-pink: 0 0 12px rgba(255, 46, 136, 0.55);
+  --gw-glow-cyan: 0 0 10px rgba(45, 226, 230, 0.45);
+  // What: soft gold glow for "on" wanted stars (spec 06: "gold with soft glow"). Why: the spec names the effect but no value; this mirrors the other glows' strength.
+  --gw-glow-gold: 0 0 10px rgba(255, 211, 110, 0.5);
+
+  // Scrims: night at 55–75% opacity (spec 03). Why: text over the 3D city must never depend on what's behind it.
+  --gw-scrim-light: rgba(11, 6, 20, 0.55);
+  --gw-scrim-strong: rgba(11, 6, 20, 0.75);
+
+  // Borders: 1px cyan at 40% opacity, 100% when active (spec 05); dividers at 25% (spec 06 stats strip).
+  --gw-border-width: 1px;
+  --gw-border-color: rgba(45, 226, 230, 0.4);
+  --gw-border-color-active: var(--gw-cyan);
+  --gw-divider-color: rgba(45, 226, 230, 0.25);
+  --gw-border: var(--gw-border-width) solid var(--gw-border-color);
+
+  // Skill bar track: white at 10% (spec 06). Fill: pink → orange gradient.
+  --gw-track: rgba(245, 245, 245, 0.1);
+  --gw-bar-fill: linear-gradient(90deg, var(--gw-pink), var(--gw-orange));
+  // Wanted star "off" state: muted outline at 40% (spec 06).
+  --gw-star-off: rgba(185, 174, 203, 0.4);
+
+  // -------------------------------------------------------------------------
+  // 04 Typography
+  // Values below are DESKTOP (≥ 600px). The mobile block at the end of this
+  // file overrides the ones that differ (spec gives "desktop / mobile").
+  // -------------------------------------------------------------------------
+  // What: font stacks with metric-similar fallbacks. Why: display=swap shows the fallback first; a close fallback means less layout shift when Anton/Rajdhani arrive.
+  --gw-font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --gw-font-body: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+
+  --gw-weight-body: 500;  // Rajdhani 500: body, small/meta.
+  --gw-weight-label: 700; // Rajdhani 700: labels, kickers.
+  --gw-weight-display: 400; // Anton ships one weight; 400 stops browsers from faking bold.
+
+  --gw-fs-display: clamp(56px, 10vw, 140px); // Hero title.
+  --gw-fs-h1: 56px;     // User's name.
+  --gw-fs-h2: 24px;     // Panel titles.
+  --gw-fs-h2-card: 18px; // Mission card repo name (spec 06: "H2 size 18px").
+  --gw-fs-numeral: clamp(40px, 4.5vw, 64px); // HUD numerals: 40–64px on desktop.
+  --gw-fs-label: 13px;  // Labels / kickers.
+  --gw-fs-body: 17px;   // Body.
+  --gw-fs-small: 14px;  // Small / meta. Never below 14px.
+  --gw-fs-cta: 18px;    // "START MISSION" (spec 06: Anton 18px).
+  --gw-fs-toast: 48px;  // "MISSION PASSED" (spec 06: Anton 48px).
+
+  --gw-lh-display: 0.9; // Display: line-height 0.9.
+  --gw-lh-h1: 1;        // H1: line-height 1.
+  --gw-lh-body: 1.5;    // Body: line-height 1.5.
+  --gw-lh-tight: 1.1;   // Labels, H2, numerals: single-line roles. Why: keeps tag/label boxes tight around caps.
+
+  --gw-ls-display: 0.01em;
+  --gw-ls-h2: 0.04em;
+  --gw-ls-label: 0.18em;
+  --gw-measure: 65ch;   // Max body line length: 65 characters.
+
+  // -------------------------------------------------------------------------
+  // 05 Spacing (4px base), grid, radii
+  // -------------------------------------------------------------------------
+  --gw-space-1: 4px;
+  --gw-space-2: 8px;
+  --gw-space-3: 12px;
+  --gw-space-4: 16px;
+  --gw-space-6: 24px;
+  --gw-space-8: 32px;
+  --gw-space-12: 48px;
+  --gw-space-16: 64px;
+
+  // Grid: desktop values; tablet/mobile overrides below.
+  --gw-grid-cols: 12;
+  --gw-grid-gutter: 24px;
+  --gw-grid-margin: 48px;
+  --gw-content-max: 1320px; // Wide: max content width, centered.
+
+  --gw-radius-panel: 4px;   // Panels: HUD looks sharp, not bubbly.
+  --gw-radius-control: 2px; // Buttons and input.
+  --gw-radius-round: 50%;   // Circles only: minimap, language dots.
+
+  // -------------------------------------------------------------------------
+  // 06 HUD component anatomy: sizes the spec fixes per component.
+  // Tokens (not inline numbers) so every instance stays identical.
+  // -------------------------------------------------------------------------
+  --gw-panel-padding: 24px;  // 16px mobile (override below).
+  --gw-panel-blur: 8px;      // backdrop-filter blur radius.
+  --gw-bracket-size: 10px;   // Corner bracket L-arm length.
+  --gw-bracket-width: 2px;   // Bracket stroke. Why 2px: at 1px, full-cyan brackets disappear next to the 1px 40% border.
+  --gw-tag-skew: -8deg;      // Header tag skew.
+  --gw-brand-height: 32px;   // "GW" badge height.
+  --gw-input-height: 64px;   // 56px mobile.
+  --gw-input-max: 640px;     // width: min(640px, 100%).
+  --gw-avatar-size: 160px;   // Character card avatar (desktop).
+  --gw-star-size: 28px;      // Wanted level star slot.
+  --gw-star-gap: 6px;
+  --gw-bar-height: 6px;      // Skill stat bar track.
+  --gw-minimap-size: 140px;
+  --gw-ticker-height: 40px;
+  --gw-touch-min: 44px;      // Minimum touch target (spec 13).
+  --gw-card-lift: -4px;      // Mission card hover lift.
+  --gw-dot-size: 10px;       // Language dot in mission cards.
+  --gw-skill-name-width: 144px; // Skill stats name column. Why fixed: every bar starts at the same x. 104px on mobile.
+  --gw-sticky-top: 24px;     // Desktop left column sticks this far below the viewport top.
+  --gw-toast-outline: 6px;   // "Mission passed" night outline thickness (half shows outside the glyph with paint-order).
+
+  // Interaction states (brief: hover, focus, pressed, disabled for everything interactive).
+  --gw-press-scale: 0.97;      // Pressed: a 3% shrink reads as "pushed" without looking broken.
+  --gw-disabled-opacity: 0.5;  // Disabled: half strength. Why: still legible, clearly inactive.
+  --gw-scanline-gap: 3px;      // Scanline period: 1px line every 3px. Why: dense enough to read as a screen, not stripes.
+
+  // Focus ring: 2px pink + glow, on every interactive element (spec 13).
+  --gw-focus-width: 2px;
+  --gw-focus-offset: 2px;
+
+  // -------------------------------------------------------------------------
+  // 08 Overlay limits (CSS side). Motion limits live in motion-tokens.ts.
+  // -------------------------------------------------------------------------
+  --gw-pulse-rest: 0.6;        // Glow strength when the pulse isn't running (reduced motion): middle of the 0.4–0.8 range.
+  --gw-scanline-opacity: 0.06; // Max 0.06.
+  --gw-grain-opacity: 0.05;    // Max 0.05.
+
+  // -------------------------------------------------------------------------
+  // 07 Motion, CSS mirror of src/app/animation/motion-tokens.ts.
+  // Only for CSS transitions (hover/focus, per the GSAP guide: "simple states
+  // are CSS's job"). GSAP code imports the TS tokens, never these.
+  // -------------------------------------------------------------------------
+  --gw-dur-instant: 100ms; // DUR.instant: press feedback.
+  --gw-dur-fast: 200ms;    // DUR.fast: hover, focus, small fades.
+  --gw-dur-base: 350ms;    // DUR.base: panels, cards.
+  // CSS can't read GSAP ease names, so these are the standard cubic-bezier equivalents.
+  --gw-ease-enter: cubic-bezier(0.25, 1, 0.5, 1);   // ≈ power3.out (GSAP power3 = "quart").
+  --gw-ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);  // ≈ expo.out.
+  --gw-ease-exit: cubic-bezier(0.32, 0, 0.67, 0);   // ≈ power2.in (GSAP power2 = "cubic").
+
+  // -------------------------------------------------------------------------
+  // Stacking order. Why tokens: z-index "wars" (999, 9999…) start when every
+  // component invents its own number.
+  // -------------------------------------------------------------------------
+  --gw-z-scene: 0;    // 3D canvas / fallback sky.
+  --gw-z-content: 10; // Pages.
+  --gw-z-hud: 20;     // Fixed HUD: ticker, top bar.
+  --gw-z-overlay: 30; // Scanlines, grain (pointer-events: none).
+  --gw-z-toast: 40;   // "Mission passed".
+  --gw-z-wipe: 50;    // Route-transition wipe and submit flash: always on top.
+}
+
+// ---------------------------------------------------------------------------
+// Tablet (600–1023): grid only. Type stays at desktop sizes from 600px up.
+// ---------------------------------------------------------------------------
+@media (max-width: #{$gw-bp-desktop - 1px}) {
+  :root {
+    --gw-grid-cols: 8;
+    --gw-grid-gutter: 20px;
+    --gw-grid-margin: 32px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile (0–599): spec's "mobile" column for type and component sizes.
+// What: one override block. Why: components keep using the same var names and
+// automatically get mobile values; no per-component media queries for sizing.
+// ---------------------------------------------------------------------------
+@media (max-width: #{$gw-bp-tablet - 1px}) {
+  :root {
+    --gw-fs-h1: 40px;
+    --gw-fs-h2: 20px;
+    --gw-fs-numeral: clamp(32px, 9vw, 44px); // 32–44px on mobile.
+    --gw-fs-label: 12px;
+    --gw-fs-body: 16px;
+
+    --gw-grid-cols: 4;
+    --gw-grid-gutter: 16px;
+    --gw-grid-margin: 16px;
+
+    --gw-panel-padding: 16px;
+    --gw-input-height: 56px;
+    --gw-avatar-size: 120px;   // Spec gives 160px for desktop only; 120px keeps name + avatar in the first screen on phones.
+    --gw-fs-toast: 40px;       // 48px "MISSION PASSED" overflows a 360px screen.
+    --gw-skill-name-width: 104px;
+  }
+}

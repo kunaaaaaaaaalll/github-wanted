@@ -1,0 +1,29 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-overlay);
+  pointer-events: none; // Spec 08: overlays never block clicks.
+}
+
+.grain,
+.scanlines {
+  position: absolute;
+  inset: 0;
+}
+
+.scanlines {
+  opacity: var(--gw-scanline-opacity); // ≤ 0.06 (spec 08).
+  // What: a 1px night line every few pixels. Why: reads as a CRT screen at this opacity without hurting legibility.
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--gw-night) 0 1px,
+    transparent 1px var(--gw-scanline-gap)
+  );
+}
+
+.grain {
+  opacity: var(--gw-grain-opacity); // ≤ 0.05 (spec 08).
+  // What: static noise from an inline SVG turbulence filter, tiled. Why: film texture with zero network requests and zero animation cost.
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}

@@ -1,0 +1,18 @@
+<section class="panel" aria-labelledby="gw-map-title">
+  <h2 class="tag" id="gw-map-title">Last seen</h2>
+  <div class="map" aria-hidden="true">
+    @if (location()) {
+      <svg viewBox="0 0 100 100" focusable="false">
+        @for (s of streets(); track $index) {
+          <line [attr.x1]="s.x1" [attr.y1]="s.y1" [attr.x2]="s.x2" [attr.y2]="s.y2" [class.major]="s.major" />
+        }
+      </svg>
+      <span class="ping"></span>
+      <span class="dot"></span>
+    } @else {
+      <!-- Spec 10: static noise texture when the location is unknown. -->
+      <span class="noise"></span>
+    }
+  </div>
+  <p class="place" [class.is-unknown]="!location()">{{ location() ?? 'Location unknown' }}</p>
+</section>

@@ -1,0 +1,116 @@
+@use 'mixins' as gw;
+
+:host { display: block; }
+
+.card {
+  @include gw.hud-panel {
+    display: grid;
+    gap: var(--gw-space-4);
+    padding-block-start: var(--gw-space-8); // Room for the tag on the top border.
+    transform-style: preserve-3d;           // Why: lets the tilt read as one solid card.
+    will-change: transform;                 // Why: the tilt only moves transform; a GPU layer keeps it smooth.
+  }
+}
+
+.tag { @include gw.hud-tag; }
+
+// Avatar frame: square, with its own corner brackets (spec 06).
+.frame {
+  position: relative;
+  width: var(--gw-avatar-size);
+  aspect-ratio: 1;
+  padding: var(--gw-space-1);
+  border: var(--gw-border);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--gw-night); // Why: a dark placeholder while the image loads, not a white flash.
+  }
+
+  // Brackets on the two other corners than the panel's, so frame + panel read as a set.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: var(--gw-bracket-size);
+    height: var(--gw-bracket-size);
+    border: 0 solid var(--gw-cyan);
+  }
+  &::before {
+    top: calc(var(--gw-border-width) * -1);
+    right: calc(var(--gw-border-width) * -1);
+    border-top-width: var(--gw-bracket-width);
+    border-right-width: var(--gw-bracket-width);
+  }
+  &::after {
+    bottom: calc(var(--gw-border-width) * -1);
+    left: calc(var(--gw-border-width) * -1);
+    border-bottom-width: var(--gw-bracket-width);
+    border-left-width: var(--gw-bracket-width);
+  }
+}
+
+.identity {
+  display: grid;
+  gap: var(--gw-space-2);
+  min-width: 0; // Why: lets long names shrink and clamp instead of stretching the grid.
+}
+
+.name {
+  @include gw.type-h1;
+  overflow-wrap: anywhere;
+  // Spec 10: names wrap to 2 lines max, then ellipsis.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.login {
+  @include gw.type-label;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--gw-touch-min); // Spec 13: 44px tap target, even for a short handle.
+  color: var(--gw-cyan);           // Spec 03: cyan = links.
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  text-transform: none;            // Why: logins are case-sensitive-looking; keep them as typed.
+  letter-spacing: var(--gw-ls-h2);
+
+  @include gw.hover { text-decoration: underline; }
+}
+
+.bio {
+  @include gw.type-body;
+  max-width: var(--gw-measure);
+  color: var(--gw-white);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  @include gw.type-small;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gw-space-1) var(--gw-space-4);
+  color: var(--gw-muted);
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-1);
+  overflow-wrap: anywhere;
+
+  svg {
+    flex: none;
+    width: var(--gw-space-4);
+    height: var(--gw-space-4);
+    fill: none;
+    stroke: var(--gw-cyan);
+    stroke-width: 2;
+  }
+}

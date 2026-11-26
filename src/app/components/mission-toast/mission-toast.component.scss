@@ -1,0 +1,40 @@
+@use 'mixins' as gw;
+
+// Centred over the HUD, never blocking it: pointer-events none, so clicks pass through during the 1.6s hold.
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-toast);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  display: grid;
+  justify-items: center;
+  gap: var(--gw-space-2);
+  text-align: center;
+  visibility: hidden; // Resting (final) state: gone. GSAP shows it for its moment.
+  opacity: 0;
+}
+
+.headline {
+  font-family: var(--gw-font-display);
+  font-size: var(--gw-fs-toast); // 48px (40px on phones).
+  line-height: var(--gw-lh-h1);
+  text-transform: uppercase;
+  color: var(--gw-gold);
+  white-space: nowrap;
+  // Spec 06: "gold text with night outline shadow". paint-order draws the stroke UNDER the fill,
+  // so the outline thickens outward and never eats into the letters.
+  -webkit-text-stroke: var(--gw-toast-outline) var(--gw-night);
+  paint-order: stroke fill;
+}
+
+.sub {
+  @include gw.type-label;
+  padding: var(--gw-space-1) var(--gw-space-2);
+  background: var(--gw-scrim-strong); // Label-size muted text needs its own scrim over a busy HUD.
+  border-radius: var(--gw-radius-control);
+}

@@ -1,0 +1,61 @@
+<header class="topbar">
+  <gw-brand-mark />
+  <gw-hud-toggles />
+</header>
+
+<main class="stage" id="main" tabindex="-1">
+  <div class="content">
+    <p class="kicker">Enter the city</p>
+    <h1 class="title" #title>GitHub Wanted</h1>
+
+    <!-- Not part of the reveal: the input is the primary action and the page's largest paint (LCP); it must be there on first frame. -->
+    <form class="search" (submit)="onSubmit($event)" novalidate>
+      <!-- Spec 13: a real label, visually hidden. The placeholder alone is not a label. -->
+      <label for="gw-search" class="visually-hidden">GitHub profile link or username</label>
+      <div class="bar" #bar [class.is-invalid]="!!error()">
+        <!-- Glow layer. GSAP pulses it while the input is empty (spec 08 "input idle"); otherwise CSS shows it only on focus. -->
+        <span class="glow" #glow aria-hidden="true"></span>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <line x1="15.5" y1="15.5" x2="21" y2="21" />
+        </svg>
+        <input
+          #field
+          id="gw-search"
+          class="field"
+          type="text"
+          inputmode="url"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+          enterkeyhint="go"
+          placeholder="Paste a GitHub profile link or username"
+          [value]="query()"
+          (input)="onInput(field.value)"
+          [attr.aria-invalid]="error() ? 'true' : null"
+          aria-describedby="gw-search-hint"
+        />
+        <button type="submit" class="cta" [disabled]="submitting()">Start mission</button>
+      </div>
+      <!-- Spec 13: errors in an aria-live="polite" region. Holds the format hint until there's an error. -->
+      <p id="gw-search-hint" class="hint" [class.is-error]="!!error()" aria-live="polite">
+        {{ error() ?? hint }}
+      </p>
+    </form>
+
+    <div class="examples reveal">
+      <span class="examples-label" id="gw-try">Try</span>
+      <ul role="list" aria-labelledby="gw-try">
+        @for (name of examples; track name) {
+          <li>
+            <button type="button" class="chip" (click)="useExample(name)">&#64;{{ name }}</button>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer class="privacy reveal">
+  <p>Public GitHub data only. Nothing is stored.</p>
+</footer>

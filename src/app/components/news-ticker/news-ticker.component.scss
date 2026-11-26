@@ -1,0 +1,100 @@
+@use 'mixins' as gw;
+
+// Fixed to the bottom of the profile, 40px tall (spec 06). Lives outside the shaken HUD wrapper:
+// a transformed parent would turn position: fixed into position: absolute.
+:host {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: var(--gw-z-hud);
+}
+
+.ticker {
+  display: flex;
+  align-items: stretch;
+  height: var(--gw-ticker-height);
+  background: var(--gw-panel-solid);
+  border-top: var(--gw-border);
+  padding-bottom: env(safe-area-inset-bottom); // Why: on notched phones, keep text above the home indicator.
+  box-sizing: content-box;
+}
+
+// "LIVE" tag in pink (spec 06), with a pulsing glow layer behind it.
+.live {
+  @include gw.type-label;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding-inline: var(--gw-space-3);
+  background: var(--gw-pink);
+  color: var(--gw-night); // Night on pink: 5.7:1.
+  flex: none;
+}
+.live-glow {
+  position: absolute;
+  inset: 0;
+  box-shadow: var(--gw-glow-pink);
+  pointer-events: none;
+  opacity: var(--gw-pulse-rest); // Resting glow when motion is off: a fixed value inside the spec's 0.4–0.8 range.
+}
+.live-text { position: relative; }
+
+.viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden; // Why: the track is wider than the screen; only the window shows.
+  display: flex;
+  align-items: center;
+}
+
+.track {
+  display: flex;
+  width: max-content; // What: as wide as all copies. Why: the GSAP loop moves it left by exactly one copy.
+  will-change: transform;
+}
+
+.copy,
+.static {
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.line {
+  @include gw.type-small;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  color: var(--gw-white);
+  padding-inline: var(--gw-space-4);
+
+  &.is-static { color: var(--gw-muted); }
+}
+
+.static {
+  overflow: hidden;
+  .line { flex: none; }
+  .line + .line { border-inline-start: var(--gw-border-width) solid var(--gw-divider-color); }
+}
+
+.sep {
+  margin-inline-start: var(--gw-space-4);
+  color: var(--gw-pink);
+  font-size: var(--gw-fs-label);
+}
+
+.pause {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--gw-touch-min); // 44px wide target; the bar is only 40px tall, so width carries the touch area.
+  background: transparent;
+  border: 0;
+  border-inline-start: var(--gw-border);
+  color: var(--gw-cyan);
+  transition: color var(--gw-dur-fast) var(--gw-ease-enter);
+
+  svg { width: var(--gw-space-4); height: var(--gw-space-4); fill: currentColor; }
+  @include gw.hover { color: var(--gw-white); }
+  &:focus-visible { outline-offset: calc(var(--gw-focus-width) * -1); } // Why: inside the fixed bar, an outer ring would be clipped by the screen edge.
+}

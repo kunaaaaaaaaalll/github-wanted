@@ -1,0 +1,59 @@
+// The backdrop is fixed behind the whole app (3D guide step 02: one canvas behind, the story in front).
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-scene);
+  overflow: hidden;
+  pointer-events: none; // Why: decoration must never swallow clicks meant for the UI.
+  // What: horizon position shared by every fallback layer. Why: spec 12: horizon at ~62%, same as the 3D camera.
+  --horizon: 62%;
+}
+
+.fallback,
+.stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage {
+  // What: start hidden; GSAP fades it in (autoAlpha) after the first frame.
+  // Why: until then the CSS fallback shows, so there's never an empty black rectangle.
+  visibility: hidden;
+  opacity: 0;
+}
+
+.sky {
+  position: absolute;
+  inset: 0 0 calc(100% - var(--horizon)) 0;
+  background: var(--gw-sunset); // The one shared sky gradient: top to horizon.
+}
+
+.ground {
+  position: absolute;
+  inset: var(--horizon) 0 0 0;
+  background: var(--gw-3d-ground);
+}
+
+.sun {
+  position: absolute;
+  left: 50%;
+  // What: centre the sun slightly above the horizon so the ground hides its bottom (matches the 3D sun).
+  top: var(--horizon);
+  width: min(40vh, 64vw); // Why: same proportions as the shader sun (radius 20% of height, narrower on tall phones).
+  height: auto;
+  transform: translate(-50%, -72%);
+  overflow: visible;
+}
+.sun-top { stop-color: var(--gw-gold); }
+.sun-bottom { stop-color: var(--gw-pink); }
+
+.skyline {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 22%;
+  bottom: calc(100% - var(--horizon)); // What: stand on the horizon line.
+  path { fill: var(--gw-3d-building); }
+}

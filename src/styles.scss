@@ -1,0 +1,121 @@
+// =============================================================================
+// Global styles: reset, base typography, focus, utilities.
+// Component styling lives in each component's .scss, never here.
+// =============================================================================
+@use 'tokens';          // What: emits the :root custom properties once. Why: every component reads them at runtime.
+@use 'mixins' as gw;
+
+// --- Minimal reset ----------------------------------------------------------
+*,
+*::before,
+*::after {
+  box-sizing: border-box; // What: width includes padding + border. Why: panel padding never breaks grid math.
+}
+
+html {
+  // What: stops iOS from enlarging text in landscape. Why: HUD layout is tuned to the token sizes.
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  // NOTE: no `scroll-behavior: smooth` here. Why: it would ignore reduced motion; scrolling stays native.
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh; // What: dynamic viewport height. Why: on mobile, 100vh hides content behind the address bar.
+  background: var(--gw-night);
+  color: var(--gw-white);
+  @include gw.type-body;
+  // What: grayscale AA on macOS. Why: light text on dark backgrounds looks bolder and fuzzier with subpixel AA.
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // What: no grey flash on tap (mobile WebKit). Why: we draw our own pressed states.
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd, ul, ol {
+  margin: 0; // Why: spacing comes from tokens on the component, not browser defaults.
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+img,
+svg,
+canvas {
+  display: block;  // Why: removes the inline-baseline gap under images.
+  max-width: 100%;
+}
+
+button,
+input {
+  font: inherit;   // Why: form controls don't inherit fonts by default; they'd render in system font.
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--gw-cyan); // Spec 03: cyan = links.
+}
+
+// --- Focus ------------------------------------------------------------------
+// What: visible ring only for keyboard focus. Why: :focus-visible avoids rings
+// after mouse clicks while keeping them for keyboard users (WCAG 2.4.7).
+:focus-visible {
+  @include gw.focus-ring;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+// What: no ring on <main> when script or the skip link focuses it. Why: it's a focus *target*, not a control;
+// a ring around the whole page looks like a bug. The next Tab lands on a real control, which does show its ring.
+main[tabindex='-1']:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+::selection {
+  background: var(--gw-pink);
+  color: var(--gw-night); // Why: night on pink passes AA (5.7:1); white on pink doesn't.
+}
+
+// --- Reduced motion (CSS side) ------------------------------------------------
+// What: movement tokens collapse to "no movement" when motion is reduced (OS setting or MOTION toggle).
+// Why: hover/press still change colour, border and glow (allowed: simple ≤ 0.2s fades), but nothing travels or scales.
+// Doing it with tokens means no component needs its own reduced-motion rule.
+:root[data-motion='reduced'] {
+  --gw-card-lift: 0px;
+  --gw-press-scale: 1;
+}
+
+// --- Skip link ------------------------------------------------------------------
+// What: the first Tab stop on every page, visible only when focused. Why: WCAG 2.4.1: keyboard users can jump past the top bar.
+.skip-link {
+  @include gw.type-label;
+  position: fixed;
+  top: var(--gw-space-2);
+  left: var(--gw-space-2);
+  z-index: var(--gw-z-wipe);
+  padding: var(--gw-space-2) var(--gw-space-4);
+  background: var(--gw-pink);
+  color: var(--gw-night);
+  border-radius: var(--gw-radius-control);
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--gw-space-4))); // Parked just above the screen.
+
+  &:focus-visible {
+    transform: none;
+    outline-color: var(--gw-white); // Pink ring on a pink chip would vanish.
+  }
+}
+
+// --- Utilities --------------------------------------------------------------
+.visually-hidden {
+  @include gw.visually-hidden;
+}

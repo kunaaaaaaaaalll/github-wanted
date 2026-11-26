@@ -1,0 +1,47 @@
+@use 'mixins' as gw;
+
+:host {
+  display: inline-flex;
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // What: a 44px hit area around the 32px badge. Why: spec 13 touch targets ≥ 44×44 without making the mark bigger.
+  min-width: var(--gw-touch-min);
+  min-height: var(--gw-touch-min);
+  border-radius: var(--gw-radius-control);
+  transition: transform var(--gw-dur-instant) var(--gw-ease-enter);
+
+  &:active { transform: scale(var(--gw-press-scale)); } // Pressed state.
+  &.is-static:active { transform: none; } // A non-link badge has no pressed state.
+}
+
+svg {
+  height: var(--gw-brand-height);
+  width: auto;
+  overflow: visible; // Why: the star pokes above the hexagon's top edge.
+}
+
+.hex {
+  fill: var(--gw-scrim-strong); // Why: the badge sits over the sky; a night fill keeps "GW" readable.
+  stroke: var(--gw-cyan);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: filter var(--gw-dur-fast) var(--gw-ease-enter);
+}
+.notch { fill: var(--gw-night); }
+.star { fill: var(--gw-gold); }
+.letters {
+  font-family: var(--gw-font-display);
+  font-size: 15px; // SVG user units inside a 34-unit-tall viewBox (scales with the badge), not CSS px on screen.
+  fill: var(--gw-white);
+  letter-spacing: 0.02em;
+}
+
+.mark:not(.is-static) { // Hover glow only where there's something to click.
+  @include gw.hover {
+    .hex { filter: drop-shadow(var(--gw-glow-cyan)); } // Hover: the outline lights up.
+  }
+}

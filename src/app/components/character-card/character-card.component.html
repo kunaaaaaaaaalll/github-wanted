@@ -1,0 +1,30 @@
+@let p = profile();
+<article class="card" aria-labelledby="gw-suspect-name">
+  <!-- Spec 10: organizations are a "CREW", people are a "SUSPECT". -->
+  <p class="tag">{{ p.isOrg ? 'Crew' : 'Suspect' }}</p>
+
+  <div class="frame">
+    <!-- width/height reserve the space before the image loads. Why: no layout shift (CLS). alt="": the name right next to it says who it is. -->
+    <img [src]="avatar()" alt="" width="160" height="160" decoding="async" />
+  </div>
+
+  <div class="identity">
+    <!-- title: the full name on hover when it's clamped to 2 lines (spec 10). -->
+    <h1 class="name" id="gw-suspect-name" [attr.title]="p.displayName">{{ p.displayName }}</h1>
+    <a class="login" [href]="p.url" target="_blank" rel="noopener noreferrer">
+      &#64;{{ p.login }}<span class="visually-hidden"> on GitHub (opens in a new tab)</span>
+    </a>
+    @if (p.bio) {
+      <p class="bio">{{ p.bio }}</p>
+    }
+    <p class="meta">
+      @if (p.location) {
+        <span class="meta-item">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" /><circle cx="12" cy="10" r="2.5" /></svg>
+          {{ p.location }}
+        </span>
+      }
+      <span class="meta-item">In the city since {{ p.joinedYear }}</span>
+    </p>
+  </div>
+</article>

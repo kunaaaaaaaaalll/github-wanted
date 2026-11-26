@@ -1,0 +1,43 @@
+<section class="ticker" aria-labelledby="gw-live-label" (mouseenter)="onEnter()" (mouseleave)="onLeave()" (focusin)="onEnter()" (focusout)="onLeave()">
+  <p class="live" id="gw-live-label">
+    <span class="live-glow" aria-hidden="true"></span>
+    <span class="live-text">Live</span>
+    <span class="visually-hidden">news</span>
+  </p>
+
+  <div class="viewport">
+    @if (news().length === 0) {
+      <!-- Spec 10: no events → this single line, static. -->
+      <p class="line is-static">Quiet on the streets.</p>
+    } @else if (scrolling()) {
+      <!-- Screen readers get the list once (first copy); the visual duplicates for the seamless loop are hidden. -->
+      <div class="track">
+        @for (c of copies(); track c) {
+          <ul role="list" class="copy" [attr.aria-hidden]="c === 0 ? null : 'true'">
+            @for (line of news(); track $index) {
+              <li class="line">{{ line }}<span class="sep" aria-hidden="true">◆</span></li>
+            }
+          </ul>
+        }
+      </div>
+    } @else {
+      <!-- Reduced motion: a static list of the 3 latest (spec 06). -->
+      <ul role="list" class="static">
+        @for (line of staticLines(); track $index) {
+          <li class="line">{{ line }}</li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (scrolling()) {
+    <button type="button" class="pause" [attr.aria-pressed]="paused()" (click)="togglePause()">
+      <span class="visually-hidden">Pause news ticker</span>
+      @if (paused()) {
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polygon points="7,5 19,12 7,19" /></svg>
+      } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" /><rect x="14" y="5" width="4" height="14" /></svg>
+      }
+    </button>
+  }
+</section>

@@ -1,0 +1,194 @@
+// =============================================================================
+// Shared SCSS mixins. Components `@use 'mixins' as gw;` (the styles folder is
+// on the include path, see angular.json → stylePreprocessorOptions).
+// Mixins only bundle tokens; they never introduce new values.
+// =============================================================================
+@use 'tokens' as t;
+
+// What: mobile-first media query helpers. Why: one spelling of every breakpoint,
+// so "tablet" can never mean 600px in one file and 768px in another.
+@mixin tablet-up {
+  @media (min-width: t.$gw-bp-tablet) { @content; }
+}
+@mixin desktop-up {
+  @media (min-width: t.$gw-bp-desktop) { @content; }
+}
+@mixin wide-up {
+  @media (min-width: t.$gw-bp-wide) { @content; }
+}
+@mixin mobile-only {
+  @media (max-width: t.$gw-bp-tablet - 1px) { @content; }
+}
+@mixin below-desktop {
+  @media (max-width: t.$gw-bp-desktop - 1px) { @content; }
+}
+
+// What: wraps styles that only apply when motion is allowed.
+// Why: PreferencesService writes data-motion="full" | "reduced" on <html>,
+// combining the OS setting with the in-app MOTION toggle. Reading the attribute
+// (not the media query) keeps CSS and GSAP in agreement. Before the app boots
+// the attribute is missing, so the safe default is "no motion".
+// Component styles only (uses :host-context, which Angular scopes correctly).
+@mixin motion-ok {
+  :host-context([data-motion='full']) & { @content; }
+}
+
+// What: hover only on devices with a real pointer. Why: on touch screens
+// :hover "sticks" after a tap, leaving cards lifted and glowing.
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { @content; }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Type roles (spec 04). Use the role, not the individual properties.
+// ---------------------------------------------------------------------------
+@mixin type-display {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-display);
+  font-size: var(--gw-fs-display);
+  line-height: var(--gw-lh-display);
+  letter-spacing: var(--gw-ls-display);
+  text-transform: uppercase;
+}
+@mixin type-h1 {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-display);
+  font-size: var(--gw-fs-h1);
+  line-height: var(--gw-lh-h1);
+  text-transform: uppercase;
+}
+@mixin type-h2 {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-display);
+  font-size: var(--gw-fs-h2);
+  line-height: var(--gw-lh-tight);
+  letter-spacing: var(--gw-ls-h2);
+  text-transform: uppercase;
+}
+@mixin type-numeral {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-display);
+  font-size: var(--gw-fs-numeral);
+  line-height: var(--gw-lh-tight);
+  // What: every digit gets the same width. Why: counters don't wobble while counting up.
+  font-variant-numeric: tabular-nums;
+}
+@mixin type-label {
+  font-family: var(--gw-font-body);
+  font-weight: var(--gw-weight-label);
+  font-size: var(--gw-fs-label);
+  line-height: var(--gw-lh-tight);
+  letter-spacing: var(--gw-ls-label);
+  text-transform: uppercase;
+  color: var(--gw-muted);
+}
+@mixin type-body {
+  font-family: var(--gw-font-body);
+  font-weight: var(--gw-weight-body);
+  font-size: var(--gw-fs-body);
+  line-height: var(--gw-lh-body);
+}
+@mixin type-small {
+  font-family: var(--gw-font-body);
+  font-weight: var(--gw-weight-body);
+  font-size: var(--gw-fs-small);
+  line-height: var(--gw-lh-body);
+}
+
+// What: hides content visually but keeps it in the accessibility tree.
+// Why: the input's real <label>, and final values of animated counters, must be
+// read by screen readers without showing on screen. `display:none` would hide
+// them from screen readers too.
+@mixin visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Base HUD panel (spec 06): glass fill + blur, 1px cyan border at 40%, corner
+// brackets on two opposite corners. Every HUD component sits in one.
+// Uses ::before / ::after for the brackets, so the host element must not use them.
+// Usage: @include gw.hud-panel { display: grid; … }  ← your declarations go in the block.
+// Why a block? Sass deprecates declarations after nested rules; @content places
+// yours after the base declarations (so they can override) but before the brackets.
+// ---------------------------------------------------------------------------
+@mixin hud-panel {
+  position: relative;
+  padding: var(--gw-panel-padding);
+  background: var(--gw-panel-solid); // Fallback: 88% fill where backdrop-filter is unsupported (spec 06).
+  border: var(--gw-border);
+  border-radius: var(--gw-radius-panel);
+  @content;
+
+  // What: frosted glass where supported. Why: readable over the city while atmosphere shows through.
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    background: var(--gw-panel);
+    -webkit-backdrop-filter: blur(var(--gw-panel-blur));
+    backdrop-filter: blur(var(--gw-panel-blur));
+  }
+
+  // Corner brackets: short L-shapes at full cyan, top-left and bottom-right.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: var(--gw-bracket-size);
+    height: var(--gw-bracket-size);
+    border: 0 solid var(--gw-cyan);
+    pointer-events: none;
+  }
+  &::before {
+    top: calc(var(--gw-border-width) * -1); // Why: sit ON the border line, not inside it.
+    left: calc(var(--gw-border-width) * -1);
+    border-top-width: var(--gw-bracket-width);
+    border-left-width: var(--gw-bracket-width);
+    border-top-left-radius: var(--gw-radius-panel);
+  }
+  &::after {
+    right: calc(var(--gw-border-width) * -1);
+    bottom: calc(var(--gw-border-width) * -1);
+    border-right-width: var(--gw-bracket-width);
+    border-bottom-width: var(--gw-bracket-width);
+    border-bottom-right-radius: var(--gw-radius-panel);
+  }
+}
+
+// Header tag (spec 06): label text in a small pink block skewed −8°, sitting on the panel's top border.
+// What: the skew is on a pseudo-element background, the text stays upright.
+// Why: spec 14 "don't skew body text"; upright text stays crisp and legible.
+@mixin hud-tag {
+  @include type-label;
+  position: absolute;
+  top: 0;
+  left: var(--gw-panel-padding);
+  transform: translateY(-50%); // What: centre the tag on the border line.
+  padding: var(--gw-space-1) var(--gw-space-2);
+  color: var(--gw-night); // Night on pink: 5.7:1.
+  isolation: isolate;     // Why: keeps the z-index:-1 background inside the tag, not behind the panel.
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--gw-pink);
+    transform: skewX(var(--gw-tag-skew));
+  }
+}
+
+// What: the shared focus ring (2px pink + glow). Why: spec 13 requires it,
+// visible on every interactive element, identical everywhere.
+@mixin focus-ring {
+  outline: var(--gw-focus-width) solid var(--gw-pink);
+  outline-offset: var(--gw-focus-offset);
+  box-shadow: var(--gw-glow-pink);
+}

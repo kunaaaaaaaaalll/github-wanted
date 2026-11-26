@@ -1,0 +1,91 @@
+@use 'mixins' as gw;
+
+// Full screen over the city. Transparent in the middle: the camera flight IS the content.
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gw-z-hud);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: var(--gw-space-4);
+  padding: var(--gw-grid-margin);
+  // What: a soft night vignette toward the bottom. Why: the tip and spinner sit on darker ground, without dimming the flight.
+  background: linear-gradient(to bottom, transparent 55%, var(--gw-scrim-light) 100%);
+}
+
+.brand {
+  grid-column: 1 / -1;
+  place-self: center;
+}
+
+.tip,
+.spinner-block {
+  align-self: end;
+  padding: var(--gw-space-2) var(--gw-space-3);
+  // Spec 03: text over the scene sits on a scrim. 88% here, not 75%: the pink "TIP:" label needs it to stay
+  // ≥ 4.5:1 while the camera flies past the bright sun (75% measured 3.2:1 in the worst frame).
+  background: var(--gw-panel-solid);
+  border-radius: var(--gw-radius-control);
+}
+
+.tip {
+  @include gw.type-body;
+  justify-self: start;
+  max-width: var(--gw-measure);
+}
+.tip-label {
+  @include gw.type-label;
+  color: var(--gw-pink);
+  margin-inline-end: var(--gw-space-2);
+}
+.tip-text { color: var(--gw-white); }
+
+.spinner-block {
+  justify-self: end;
+  display: grid;
+  justify-items: end;
+  gap: var(--gw-space-1);
+}
+
+.still {
+  @include gw.type-small;
+  color: var(--gw-orange); // Spec 03: orange = warnings.
+}
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gw-space-2);
+}
+
+.label { @include gw.type-label; }
+
+// Segmented ring: 8 short bars rotated around a centre point.
+.spinner {
+  position: relative;
+  width: var(--gw-space-6);
+  height: var(--gw-space-6);
+}
+.seg {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--gw-bracket-width);
+  height: 30%;
+  margin-left: calc(var(--gw-bracket-width) / -2);
+  background: var(--gw-cyan);
+  border-radius: var(--gw-radius-control);
+  transform-origin: 50% 166.67%; // What: rotate around the ring's centre (bar height is 30% of the ring; centre is 50% down → 50/30 = 166.67%).
+  transform: rotate(calc(var(--i) * 45deg));
+  opacity: 0.25; // Resting state: all segments dim. GSAP lights them in turn when motion is allowed; reduced motion keeps this static ring.
+}
+
+// Mobile: stack tip above spinner, both full width.
+@include gw.mobile-only {
+  :host {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto auto;
+  }
+  .spinner-block { justify-self: start; justify-items: start; }
+}

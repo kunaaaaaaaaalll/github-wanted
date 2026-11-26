@@ -1,0 +1,53 @@
+@use 'mixins' as gw;
+
+:host {
+  display: flex;
+  gap: var(--gw-space-2);
+}
+
+.toggle {
+  @include gw.type-label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-2);
+  min-height: var(--gw-touch-min); // Spec 13: ≥ 44px touch target.
+  padding-inline: var(--gw-space-3);
+  background: var(--gw-scrim-strong); // Why: labels sit over the sky; the scrim keeps muted text at AA contrast.
+  border: var(--gw-border);
+  border-radius: var(--gw-radius-control);
+  color: var(--gw-muted);
+  transition:
+    border-color var(--gw-dur-fast) var(--gw-ease-enter),
+    color var(--gw-dur-fast) var(--gw-ease-enter),
+    transform var(--gw-dur-instant) var(--gw-ease-enter);
+
+  @include gw.hover {
+    border-color: var(--gw-border-color-active);
+    color: var(--gw-white);
+  }
+  &:active { transform: scale(var(--gw-press-scale)); }
+}
+
+.dot {
+  width: var(--gw-space-2);
+  height: var(--gw-space-2);
+  border: var(--gw-border-width) solid var(--gw-muted);
+  border-radius: var(--gw-radius-control);
+  transition: background-color var(--gw-dur-fast) var(--gw-ease-enter), border-color var(--gw-dur-fast) var(--gw-ease-enter);
+}
+
+.state {
+  color: var(--gw-muted);
+  min-width: 3ch; // Why: "ON" → "OFF" must not shift the button width.
+}
+
+// Pressed (on): cyan indicator, white state text.
+.toggle[aria-pressed='true'] {
+  .dot { background: var(--gw-cyan); border-color: var(--gw-cyan); }
+  .state { color: var(--gw-white); }
+}
+
+// Mobile: hide the visible ON/OFF word to save width; the dot still shows state and aria-pressed tells screen readers.
+@include gw.mobile-only {
+  .state { display: none; }
+}

@@ -1,0 +1,255 @@
+@use 'mixins' as gw;
+
+// Full-viewport layout: top bar, centred stage, privacy footer.
+:host {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  padding-inline: var(--gw-grid-margin);
+  // What: clip the oversized scrim at the viewport edge. Why: it extends past the screen on purpose (soft edges);
+  // without clipping it creates scrollbars. `clip`, never `hidden` (3D guide wall #1: hidden breaks sticky).
+  overflow: clip;
+}
+
+// --- Top bar: GW mark left, toggles right (spec 09.1) -----------------------
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gw-space-4);
+  padding-block: var(--gw-space-4);
+}
+
+// --- Stage: content block at the optical centre (~45%, spec 09.1) -----------
+.stage {
+  display: grid;
+  // What: rows of 45 : 55 around the content. Why: optical centre sits slightly above the mathematical one.
+  grid-template-rows: 45fr auto 55fr;
+  justify-items: center;
+}
+
+.content {
+  grid-row: 2;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--gw-space-4);
+  width: 100%;
+  text-align: center;
+
+  // What: only the interactive rows are capped at 640px (spec 06 input width); the title may be wider.
+  // Why: capping the whole block made the nowrap title overflow to the right and drag everything off-centre.
+  > .search,
+  > .examples { max-width: var(--gw-input-max); }
+
+  // What: radial night scrim behind the block (spec 09.1). Why: the title and input stay readable over any frame of the city.
+  // Oversized and soft-edged so it reads as atmosphere, not a box.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--gw-space-16) * -1.5) calc(var(--gw-space-16) * -2);
+    z-index: -1;
+    background: radial-gradient(
+      closest-side,
+      var(--gw-scrim-strong) 0%,
+      var(--gw-scrim-strong) 62%,  // Why: hold full strength under every text row (the kicker sits ~58% out); muted labels need the full 75% night to stay ≥ 4.5:1 over the bright sky.
+      var(--gw-scrim-light) 85%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+}
+
+.kicker {
+  @include gw.type-label;
+}
+
+.title {
+  @include gw.type-display;
+  // What: no wider than its container, wraps to 2 lines on tiny screens. Why: never overflow horizontally.
+  max-width: 100%;
+  margin-block-end: var(--gw-space-4);
+  white-space: nowrap; // Desktop: always one line, like a title card.
+  // What: SplitText's masks clip to each line box; Anton caps are taller than line-height 0.9.
+  // Why: a little padding inside the mask keeps letter tops from being shaved off.
+  :deep([class*='-mask']) { padding-block: 0.06em; margin-block: -0.06em; }
+
+  @include gw.mobile-only { white-space: normal; }
+}
+
+// --- Search: input bar with attached CTA (spec 06) --------------------------
+.search {
+  display: grid;
+  gap: var(--gw-space-2);
+  width: 100%;
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: var(--gw-input-height);
+  background: var(--gw-night);
+  border: var(--gw-border-width) solid var(--gw-border-color);
+  border-radius: var(--gw-radius-control);
+  transition: border-color var(--gw-dur-fast) var(--gw-ease-enter);
+
+  // Focus: full-strength border (spec 06). The pink glow comes from .glow below.
+  &:focus-within { border-color: var(--gw-border-color-active); }
+  &.is-invalid { border-color: var(--gw-pink); }
+
+  // Mobile: CTA drops under the input, still attached as one unit.
+  // Why: side by side at 360px, the placeholder truncates to "Paste a GitHub pro…".
+  @include gw.mobile-only {
+    flex-wrap: wrap;
+    height: auto;
+  }
+}
+
+// Glow layer: sits behind the bar's content, carries the pink glow shadow.
+.glow {
+  position: absolute;
+  inset: calc(var(--gw-border-width) * -1);
+  border-radius: inherit;
+  box-shadow: var(--gw-glow-pink);
+  pointer-events: none;
+  opacity: 0; // Final CSS state: hidden unless focused (GSAP overrides with the idle pulse when motion is on).
+  transition: opacity var(--gw-dur-fast) var(--gw-ease-enter);
+}
+.bar:focus-within .glow { opacity: 1; }
+
+.icon {
+  flex: none;
+  align-self: center;
+  width: var(--gw-space-6);
+  height: var(--gw-space-6);
+  margin-inline: var(--gw-space-4) 0;
+  fill: none;
+  stroke: var(--gw-cyan);
+  stroke-width: 2;
+  stroke-linecap: round;
+
+  @include gw.mobile-only { height: var(--gw-input-height); }
+}
+
+.field {
+  flex: 1;
+  min-width: 0; // Why: lets the input shrink inside flex instead of pushing the CTA out.
+  height: var(--gw-input-height);
+  padding-inline: var(--gw-space-3) var(--gw-space-4);
+  background: transparent;
+  border: 0;
+  @include gw.type-body;
+  color: var(--gw-white);
+  text-overflow: ellipsis;
+
+  &::placeholder { color: var(--gw-muted); opacity: 1; } // opacity 1: Firefox dims placeholders by default, which would fail contrast.
+  // The bar shows focus (border + glow); a second ring on the input itself would double up.
+  &:focus-visible { outline: none; box-shadow: none; }
+
+  @include gw.mobile-only { flex-basis: calc(100% - var(--gw-space-12)); }
+}
+
+.cta {
+  flex: none;
+  padding-inline: var(--gw-space-6);
+  background: var(--gw-pink);
+  color: var(--gw-night); // Spec 03: night on pink (5.7:1); white on pink fails at this size.
+  border: 0;
+  border-radius: 0 var(--gw-radius-control) var(--gw-radius-control) 0;
+  font-family: var(--gw-font-display);
+  font-size: var(--gw-fs-cta);
+  letter-spacing: var(--gw-ls-h2);
+  text-transform: uppercase;
+  transition:
+    box-shadow var(--gw-dur-fast) var(--gw-ease-enter),
+    transform var(--gw-dur-instant) var(--gw-ease-enter),
+    opacity var(--gw-dur-fast) var(--gw-ease-enter);
+
+  @include gw.hover { box-shadow: var(--gw-glow-pink); }         // Hover: lights up.
+  &:active:not(:disabled) { transform: scale(var(--gw-press-scale)); } // Pressed.
+  &:focus-visible { outline-color: var(--gw-white); }             // Focus: a pink ring on a pink button is invisible; white keeps it visible.
+  &:disabled { opacity: var(--gw-disabled-opacity); cursor: default; } // Disabled (during the exit).
+
+  @include gw.mobile-only {
+    flex-basis: 100%;
+    height: var(--gw-input-height);
+    border-radius: 0 0 var(--gw-radius-control) var(--gw-radius-control);
+  }
+}
+
+// Hint / error line: aria-live (spec 13). Fixed min-height so the layout doesn't jump when the message changes.
+.hint {
+  @include gw.type-small;
+  min-height: calc(var(--gw-fs-small) * var(--gw-lh-body));
+  color: var(--gw-muted);
+  text-align: start;
+
+  // Spec 10: pink text. Pink only reaches AA on solid night (5.7:1); over the translucent scrim it can drop to 3.2:1,
+  // so the error line gets its own night backing.
+  &.is-error {
+    justify-self: start;
+    padding-inline: var(--gw-space-2);
+    background: var(--gw-night);
+    border-radius: var(--gw-radius-control);
+    color: var(--gw-pink);
+  }
+}
+
+// --- Example chips (spec 09.1) ----------------------------------------------
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gw-space-2);
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gw-space-2);
+    margin: 0;
+  }
+}
+
+.examples-label {
+  @include gw.type-label;
+  &::after { content: ':'; }
+}
+
+.chip {
+  @include gw.type-label;
+  min-height: var(--gw-touch-min);
+  padding-inline: var(--gw-space-3);
+  background: var(--gw-panel);
+  border: var(--gw-border);
+  border-radius: var(--gw-radius-control);
+  color: var(--gw-white);
+  transition:
+    border-color var(--gw-dur-fast) var(--gw-ease-enter),
+    box-shadow var(--gw-dur-fast) var(--gw-ease-enter),
+    transform var(--gw-dur-instant) var(--gw-ease-enter);
+
+  @include gw.hover {
+    border-color: var(--gw-border-color-active);
+    box-shadow: var(--gw-glow-cyan);
+  }
+  &:active { transform: scale(var(--gw-press-scale)); }
+}
+
+// --- Privacy note (spec 09.1 / 11) ------------------------------------------
+.privacy {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--gw-space-4) var(--gw-space-6);
+
+  p {
+    @include gw.type-small;
+    padding: var(--gw-space-1) var(--gw-space-3);
+    background: var(--gw-scrim-strong); // Spec 03: text over the scene sits on a scrim.
+    border-radius: var(--gw-radius-control);
+    color: var(--gw-muted);
+  }
+}

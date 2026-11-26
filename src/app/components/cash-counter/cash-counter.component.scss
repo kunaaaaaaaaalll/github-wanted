@@ -1,0 +1,25 @@
+@use 'mixins' as gw;
+
+:host {
+  display: grid;
+  justify-items: end; // Top-right of the HUD: numbers right-aligned so they grow leftward.
+  gap: var(--gw-space-1);
+}
+
+.cash {
+  @include gw.type-numeral;
+  display: flex;
+  align-items: baseline;
+  gap: var(--gw-space-1);
+  color: var(--gw-white);
+  white-space: nowrap; // Why: "$1,204,331" must never wrap mid-number.
+}
+
+.dollar { color: var(--gw-orange); } // Spec 06: "$" in orange (rewards).
+
+.value {
+  display: inline-block;
+  text-align: end;
+}
+
+.sub { @include gw.type-label; }

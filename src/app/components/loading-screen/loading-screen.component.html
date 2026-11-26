@@ -1,0 +1,25 @@
+<!-- Spec 09.2 layout: GW mark centred (small), tips bottom-left, spinner + LOADING bottom-right. -->
+<div class="brand"><gw-brand-mark [link]="false" /></div>
+
+<div class="tip">
+  <span class="tip-label">Tip:</span>
+  <span class="tip-text">{{ tips[tipIndex()] }}</span>
+</div>
+
+<div class="spinner-block">
+  @if (stillSearching()) {
+    <p class="still">Still searching…</p>
+  }
+  <div class="spinner-row">
+    <span class="spinner" aria-hidden="true">
+      @for (i of segments; track i) {
+        <!-- Each segment is rotated into place around the centre (45° apart for 8 segments). -->
+        <span class="seg" [style.--i]="i"></span>
+      }
+    </span>
+    <span class="label">Loading</span>
+  </div>
+</div>
+
+<!-- One polite announcement on arrival ("Loading profile"), and one more if it takes long. -->
+<p class="visually-hidden" role="status">{{ status() }}</p>

@@ -1,0 +1,14 @@
+@let s = state();
+@if (!loadingDone() || s.status === 'loading') {
+  <!-- Spec 09.2: waits for both the intro (≥ 1.2s) and the data, then fades out and reports back. -->
+  <gw-loading-screen [ready]="settled()" (finished)="loadingDone.set(true)" />
+} @else if (s.status === 'error') {
+  <header class="topbar">
+    <gw-brand-mark />
+    <a gwLink="/" class="back">← Search another</a>
+  </header>
+  <gw-error-screen [error]="s.error" [username]="username()" (retry)="onRetry()" />
+} @else {
+  <!-- Mounts only now, with data, so its reveal choreography starts at exactly the right moment. -->
+  <gw-profile-hud [profile]="s.profile" />
+}
